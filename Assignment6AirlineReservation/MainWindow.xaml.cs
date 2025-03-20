@@ -32,22 +32,12 @@ namespace Assignment6AirlineReservation
                 InitializeComponent();
                 Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
 
-                DataSet ds = new DataSet();
-                //Should probably not have SQL statements behind the UI
-                string sSQL = "SELECT Flight_ID, Flight_Number, Aircraft_Type FROM FLIGHT";
-                int iRet = 0;
-                clsData = new clsDataAccess();
+                // Initialize a flight manager
+                clsFlightManager flightManager = new clsFlightManager();
 
-                //This should probably be in a new class.  Would be nice if this new class
-                //returned a list of Flight objects that was then bound to the combo box
-                //Also should show the flight number and aircraft type together
-                ds = clsData.ExecuteSQLStatement(sSQL, ref iRet);
+                // Load the choose flight combo box with available flights
+                cbChooseFlight.ItemsSource = flightManager.GetFlights();
 
-                //Should probably bind a list of flights to the combo box
-                for(int i = 0; i < iRet; i++)
-                {
-                    cbChooseFlight.Items.Add(ds.Tables[0].Rows[i][0]);
-                }
             }
             catch (Exception ex)
             {
@@ -60,45 +50,77 @@ namespace Assignment6AirlineReservation
         {
             try
             {
-                string selection = cbChooseFlight.SelectedItem.ToString();  //This is wrong, if a list of flights was in the combo box, then could get the selected flight in an object
+                // This represents the flights id
+                int selection = cbChooseFlight.SelectedIndex + 1;
                 cbChoosePassenger.IsEnabled = true;
                 gPassengerCommands.IsEnabled = true;
-                DataSet ds = new DataSet();                
-                int iRet = 0;
 
-                //Should be using a flight object to get the flight ID here
-                if (selection == "1")
-                {
-                    CanvasA380.Visibility = Visibility.Hidden;
-                    Canvas767.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    Canvas767.Visibility = Visibility.Hidden;
-                    CanvasA380.Visibility = Visibility.Visible;
-                }
+                clsPassengerManager passengerManager = new clsPassengerManager();
+                
+                // This list holds all passengers on the current flight
+                List<clsPassenger> passengers = passengerManager.GetPassengers(selection);
 
-                //I think this should be in a new class to hold SQL statments
-                string sSQL = "SELECT Passenger.Passenger_ID, First_Name, Last_Name, FPL.Seat_Number " +
-                              "FROM Passenger, Flight_Passenger_Link FPL " +
-                              "WHERE Passenger.Passenger_ID = FPL.Passenger_ID AND " +
-                              "Flight_ID = " + cbChooseFlight.SelectedItem.ToString();//If the cbChooseFlight was bound to a list of Flights, the selected object would have the flight ID
-                //Probably put in a new class
-                ds = clsData.ExecuteSQLStatement(sSQL, ref iRet);
-
-                cbChoosePassenger.Items.Clear();//Don't need if assigning a list of passengers to the combo box
-
-                //Would be nice if code from another class executed the SQL above, added each passenger into a Passenger object,
-                //then into a list of Passengers to be returned and bound to the combo box
-                for (int i = 0; i < iRet; i++)
-                {
-                    cbChoosePassenger.Items.Add(ds.Tables[0].Rows[i][1] + " " + ds.Tables[0].Rows[i][2]);
-                }
+                // Update the choose passenger combo box
+                cbChoosePassenger.ItemsSource = passengers;
+            
+                // Updates the flight plane (left side of the screen)
+                UpdateFlightPane(selection, ref passengers);
             }
             catch (Exception ex)
             {
                 HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
                     MethodInfo.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Updates flight pane based on chosen flight
+        /// </summary>
+        /// <param name="flightID">The flight id of the chosen flight</param>
+        private void UpdateFlightPane(int flightID, ref List<clsPassenger> passengers)
+        {
+            try
+            {
+                if (flightID == 1)
+                {
+                    // Display appropriate flight 
+                    CanvasA380.Visibility = Visibility.Hidden;
+                    Canvas767.Visibility = Visibility.Visible;
+                    // Mark taken seats red
+                    foreach (clsPassenger passenger in passengers)
+                    {
+                        foreach (Label seat in c767_Seats.Children)
+                        {
+                            if (seat.Name == ("Seat" + passenger.seatNumber))
+                            {
+                                seat.Background = new SolidColorBrush(Colors.Red);
+                            }
+                        }
+                    }
+                }
+                else 
+                {
+                    // Display appropriate flight
+                    Canvas767.Visibility = Visibility.Hidden;
+                    CanvasA380.Visibility = Visibility.Visible;
+                    // Mark taken seats red
+                    foreach (clsPassenger passenger in passengers)
+                    {
+                        foreach (Label seat in cA380_Seats.Children)
+                        {
+                            if (seat.Name == ("SeatA" + passenger.seatNumber))
+                            {
+                                seat.Background = new SolidColorBrush(Colors.Red);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //Throw an exception
+                throw new Exception(MethodInfo.GetCurrentMethod().DeclaringType.Name + "." +
+                                    MethodInfo.GetCurrentMethod().Name + " -> " + ex.Message);
             }
         }
 

@@ -56,6 +56,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="clsFlight.cs" />
+    <Compile Include="clsFlightManager.cs" />
+    <Compile Include="clsPassenger.cs" />
+    <Compile Include="clsPassengerManager.cs" />
+    <Compile Include="ExceptionHandler.cs" />
     <Compile Include="wndAddPassenger.xaml.cs">
       <DependentUpon>wndAddPassenger.xaml</DependentUpon>
     </Compile>
