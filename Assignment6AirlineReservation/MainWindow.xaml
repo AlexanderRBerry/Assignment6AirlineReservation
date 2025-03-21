@@ -19,7 +19,7 @@
         <Border Grid.Column="1" Margin="15,0,0,0" Grid.Row="1" Padding="0,10">
             <Grid x:Name="gPassengerCommands" IsEnabled="False">
                 <Button x:Name="cmdChangeSeat" Content="Change Seat" HorizontalAlignment="Left" VerticalAlignment="Top" Width="127" Height="25"/>
-                <Button x:Name="cmdDeletePassenger" Content="Delete Passenger" HorizontalAlignment="Left" Margin="158,0,0,0" VerticalAlignment="Bottom" Width="118" Height="25"/>
+                <Button x:Name="cmdDeletePassenger" Content="Delete Passenger" HorizontalAlignment="Left" Margin="158,0,0,0" VerticalAlignment="Bottom" Width="118" Height="25" Click="cmdDeletePassenger_Click"/>
                 <Button x:Name="cmdAddPassenger" Content="Add Passenger" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="127" Height="25" Click="cmdAddPassenger_Click"/>
             </Grid>
         </Border>

@@ -110,7 +110,7 @@ namespace Assignment6AirlineReservation
                         // Iterate through passengers
                         foreach (clsPassenger passenger in passengers)
                         {
-                            // If the seat is red here it has already been checked
+                            //TODO: This if won't ever be true. Remove
                             if (seat.Background == new SolidColorBrush(Colors.Red))
                             {
                                 break;
@@ -140,8 +140,8 @@ namespace Assignment6AirlineReservation
                         // Iterate through passengers
                         foreach (clsPassenger passenger in passengers)
                         {
-                            // If the seat is red here it has already been checked
-                            if(seat.Background == new SolidColorBrush(Colors.Red))
+                            //TODO: This if won't ever be true. Remove
+                            if (seat.Background == new SolidColorBrush(Colors.Red))
                             {
                                 break;
                             }
@@ -257,6 +257,26 @@ namespace Assignment6AirlineReservation
 
             // Reset boolean for adding a passenger
             bAddingPassenger = false;
+        }
+
+        private void cmdDeletePassenger_Click(object sender, RoutedEventArgs e)
+        {
+            // No passenger is selected. Don't do anything
+            if (cbChoosePassenger.SelectedItem == null)
+            {
+                return;
+            }
+
+            // Get the selected person
+            clsPassenger passenger = (clsPassenger)cbChoosePassenger.SelectedItem;
+
+            // Get the flight ID
+            int flightID = cbChooseFlight.SelectedIndex + 1;
+
+            // Delete the passenger from the database
+            passengerManager.DeletePassenger(passenger, flightID);
+
+            UpdateFlightDetails(flightID);
         }
     }
 }

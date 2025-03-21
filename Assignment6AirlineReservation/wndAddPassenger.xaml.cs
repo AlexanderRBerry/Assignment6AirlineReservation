@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Exception_Handler;
 
+
 namespace Assignment6AirlineReservation
 {
     /// <summary>
@@ -64,7 +65,7 @@ namespace Assignment6AirlineReservation
             }
             catch (System.Exception ex)
             {
-                Exception_Handler.HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
+                ExceptionHandler.HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
                             MethodInfo.GetCurrentMethod().Name, ex.Message);
             }
         }

@@ -117,5 +117,29 @@ namespace Assignment6AirlineReservation
                                     MethodInfo.GetCurrentMethod().Name + " -> " + ex.Message);
             }
         }
+
+        /// <summary>
+        /// Deletes a passenger from the database
+        /// </summary>
+        /// <param name="passenger">clsPassenger object to be deleted</param>
+        /// <param name="flightID">int flightID of which the passenger will be removed</param>
+        public void DeletePassenger(clsPassenger passenger, int flightID)
+        {
+            clsDataAccess database = new clsDataAccess();
+
+            // SQL to delete a passenger from the link table
+            string sSQL = "Delete FROM FLIGHT_PASSENGER_LINK WHERE FLIGHT_ID = " + 
+                flightID + " AND PASSENGER_ID = " + passenger.id; 
+
+            // Delete the passenger from the link table
+            database.ExecuteNonQuery(sSQL);
+
+            // SQL to delete a passenger
+            sSQL = "Delete FROM PASSENGER WHERE PASSENGER_ID = " +
+                passenger.id; 
+
+            // Delete the passenger from Passenger table
+            database.ExecuteNonQuery(sSQL);
+        }
     }
 }
