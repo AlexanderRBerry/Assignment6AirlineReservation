@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls.Primitives;
 
 namespace Assignment6AirlineReservation
 {
@@ -20,9 +21,10 @@ namespace Assignment6AirlineReservation
         private List<clsFlight> flights;
 
         /// <summary>
-        /// 
+        /// Extracts all flights from the database and compiles them in a list
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A List<clsFlights> containing all flights</returns>
+        /// <exception cref="Exception"></exception>
         public List<clsFlight> GetFlights()
         {
             try
@@ -60,6 +62,32 @@ namespace Assignment6AirlineReservation
                 throw new Exception(MethodInfo.GetCurrentMethod().DeclaringType.Name + "." +
                                     MethodInfo.GetCurrentMethod().Name + " -> " + ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Verifies if a seat number is already in the database link table
+        /// </summary>
+        /// <param name="seatNumber">The seat number to test for</param>
+        /// <param name="flightID">The ID of the flight</param>
+        /// <returns>A boolean, false if the seat is open, true if the seat is taken</returns>
+        public bool SeatTaken(string seatNumber, int flightID)
+        {
+            // SQL to check if a seat number is already in the database
+            string sSQL = "SELECT Seat_Number FROM Flight_Passenger_Link WHERE Seat_Number = '" +
+                   seatNumber + "' AND Flight_ID = " + flightID ;
+
+            clsDataAccess database = new clsDataAccess();
+
+            // dbRetVal will be an empty string if the seat number was not found
+            string dbRetVal = database.ExecuteScalarSQL(sSQL);
+
+            // Seat not taken
+            if (dbRetVal == "")
+            {
+                return false;
+            }
+            // Seat taken
+            return true;
         }
     }
 }

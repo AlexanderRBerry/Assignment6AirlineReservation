@@ -15,18 +15,22 @@ namespace Assignment6AirlineReservation
         /// Passenger ID
         /// </summary>
         private string sID;
+
         /// <summary>
         /// Passenger first name
         /// </summary>
         private string sFirstName;
+
         /// <summary>
         /// Passenger last name
         /// </summary>
         private string sLastName;
+
         /// <summary>
         /// Passenger seat number
         /// </summary>
         private string sSeatNumber;
+
         /// <summary>
         /// Passenger ID getter/Setter
         /// </summary>
@@ -35,6 +39,7 @@ namespace Assignment6AirlineReservation
             get { return sID; }
             set { sID = value; }
         }
+
         /// <summary>
         /// Passenger first name getter/Setter
         /// </summary>
@@ -43,6 +48,7 @@ namespace Assignment6AirlineReservation
             get { return sFirstName; }
             set { sFirstName = value; }
         }
+
         /// <summary>
         /// Passenger last name getter/Setter
         /// </summary>
@@ -51,6 +57,7 @@ namespace Assignment6AirlineReservation
             get { return sLastName; }
             set { sLastName = value; }
         }
+
         /// <summary>
         /// Passenger seat number getter/Setter
         /// </summary>
@@ -59,6 +66,7 @@ namespace Assignment6AirlineReservation
             get { return sSeatNumber; }
             set { sSeatNumber = value; }
         }
+
         /// <summary>
         /// clsPassenger ToString override
         /// </summary>

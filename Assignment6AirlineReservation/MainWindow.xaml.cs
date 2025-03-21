@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Exception_Handler;
 
 namespace Assignment6AirlineReservation
 {
@@ -22,18 +24,24 @@ namespace Assignment6AirlineReservation
     /// </summary>
     public partial class MainWindow : Window
     {
-        clsDataAccess clsData;
+        //clsDataAccess clsData;
         wndAddPassenger wndAddPass;
+
+        clsFlightManager flightManager;
+        clsPassengerManager passengerManager;
+
+        // Determines if the program is in "Add Passenger Mode"
+        public static bool bAddingPassenger;
 
         public MainWindow()
         {
             try
             {
                 InitializeComponent();
-                Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
+                Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose; // Ensures complete shutdown
 
                 // Initialize a flight manager
-                clsFlightManager flightManager = new clsFlightManager();
+                flightManager = new clsFlightManager();
 
                 // Load the choose flight combo box with available flights
                 cbChooseFlight.ItemsSource = flightManager.GetFlights();
@@ -41,59 +49,78 @@ namespace Assignment6AirlineReservation
             }
             catch (Exception ex)
             {
-                HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
+                ExceptionHandler.HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
                     MethodInfo.GetCurrentMethod().Name, ex.Message);
             }
         }
 
+        /// <summary>
+        /// Displays appropriate flight details and activates relevant controls
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void cbChooseFlight_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 // This represents the flights id
                 int selection = cbChooseFlight.SelectedIndex + 1;
+
+                // Enable relevant controlls
                 cbChoosePassenger.IsEnabled = true;
                 gPassengerCommands.IsEnabled = true;
 
-                clsPassengerManager passengerManager = new clsPassengerManager();
-                
-                // This list holds all passengers on the current flight
-                List<clsPassenger> passengers = passengerManager.GetPassengers(selection);
-
-                // Update the choose passenger combo box
-                cbChoosePassenger.ItemsSource = passengers;
-            
-                // Updates the flight plane (left side of the screen)
-                UpdateFlightPane(selection, ref passengers);
+                UpdateFlightDetails(selection);
             }
             catch (Exception ex)
             {
-                HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
+                ExceptionHandler.HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
                     MethodInfo.GetCurrentMethod().Name, ex.Message);
             }
         }
 
         /// <summary>
-        /// Updates flight pane based on chosen flight
+        /// Updates flight details based on the selected flight
         /// </summary>
-        /// <param name="flightID">The flight id of the chosen flight</param>
-        private void UpdateFlightPane(int flightID, ref List<clsPassenger> passengers)
+        /// <param name="flightID">The flight ID of the selected flight</param>
+        private void UpdateFlightDetails(int flightID)
         {
             try
             {
+                passengerManager = new clsPassengerManager();
+
+                // This list holds all passengers on the current flight
+                List<clsPassenger> passengers = passengerManager.GetPassengers(flightID);
+
+                // Bind passengers to the passenger combo box
+                cbChoosePassenger.ItemsSource = passengers;
+
                 if (flightID == 1)
                 {
                     // Display appropriate flight 
                     CanvasA380.Visibility = Visibility.Hidden;
                     Canvas767.Visibility = Visibility.Visible;
-                    // Mark taken seats red
-                    foreach (clsPassenger passenger in passengers)
+
+                    // Mark taken seats red and avaliable seats blue
+                    foreach (Label seat in c767_Seats.Children) 
                     {
-                        foreach (Label seat in c767_Seats.Children)
+                        // Reset each seat to blue once
+                        seat.Background = new SolidColorBrush(Colors.Blue);
+
+                        // Iterate through passengers
+                        foreach (clsPassenger passenger in passengers)
                         {
+                            // If the seat is red here it has already been checked
+                            if (seat.Background == new SolidColorBrush(Colors.Red))
+                            {
+                                break;
+                            }
+
+                            // The seat is taken
                             if (seat.Name == ("Seat" + passenger.seatNumber))
                             {
                                 seat.Background = new SolidColorBrush(Colors.Red);
+                                break;
                             }
                         }
                     }
@@ -103,15 +130,29 @@ namespace Assignment6AirlineReservation
                     // Display appropriate flight
                     Canvas767.Visibility = Visibility.Hidden;
                     CanvasA380.Visibility = Visibility.Visible;
-                    // Mark taken seats red
-                    foreach (clsPassenger passenger in passengers)
+
+                    // Mark taken seats red and avaliable seats blue
+                    foreach (Label seat in cA380_Seats.Children)
                     {
-                        foreach (Label seat in cA380_Seats.Children)
+                        // Reset each seat to blue once
+                        seat.Background = new SolidColorBrush(Colors.Blue);
+
+                        // Iterate through passengers
+                        foreach (clsPassenger passenger in passengers)
                         {
+                            // If the seat is red here it has already been checked
+                            if(seat.Background == new SolidColorBrush(Colors.Red))
+                            {
+                                break;
+                            }
+
+                            // The seat is taken
                             if (seat.Name == ("SeatA" + passenger.seatNumber))
                             {
                                 seat.Background = new SolidColorBrush(Colors.Red);
+                                break;
                             }
+                            
                         }
                     }
                 }
@@ -124,30 +165,98 @@ namespace Assignment6AirlineReservation
             }
         }
 
+        /// <summary>
+        /// Displays the add passenger form
+        /// Disables most controls so a user must select a seat for the added passenger
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void cmdAddPassenger_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                // Initialize add passenger window
                 wndAddPass = new wndAddPassenger();
                 wndAddPass.ShowDialog();
+
+                // If not in add passenger mode, don't disable controls
+                if (!bAddingPassenger)
+                {
+                    return;
+                }
+
+                // Disable all controls except choosing a seat
+                cbChooseFlight.IsEnabled = false;
+                cbChoosePassenger.IsEnabled = false;
+                cmdAddPassenger.IsEnabled = false;
+                cmdChangeSeat.IsEnabled = false;
+                cmdDeletePassenger.IsEnabled = false;
+
             }
             catch (Exception ex)
             {
-                HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
+                ExceptionHandler.HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
                     MethodInfo.GetCurrentMethod().Name, ex.Message);
             }
         }
 
-        private void HandleError(string sClass, string sMethod, string sMessage)
+
+        private void cmdChangeSeat_Click(object sender, RoutedEventArgs e)
         {
-            try
+
+        }
+
+        private void Seat_Click(object sender, MouseButtonEventArgs e)
+        {
+            // If not in Add passenger mode return
+            // TODO: Display the selected seats passenger if applicable
+            if (!bAddingPassenger)
             {
-                MessageBox.Show(sClass + "." + sMethod + " -> " + sMessage);
+                return;
             }
-            catch (System.Exception ex)
+
+            Label seat = sender as Label;
+            int flightID = cbChooseFlight.SelectedIndex + 1;
+
+            /*
+             * Isolate the seat number of the selected label
+             * Regular expression: 
+             * \d finds a digit between 0 and 9
+             * 1, 2 means it will find between 1 and 2 occurances of a digit
+             * $ finds matches at the end of the string
+             */
+            Match seatMatch = Regex.Match(seat.Name, @"\d{1,2}$");
+
+            // Isolate the value (seat number) of seatMatch
+            string sSeatNumber = seatMatch.Value;
+
+            // Seat is already taken do nothing
+            if (flightManager.SeatTaken(sSeatNumber, flightID))
             {
-                System.IO.File.AppendAllText(@"C:\Error.txt", Environment.NewLine + "HandleError Exception: " + ex.Message);
+                return;
             }
+
+            // Create a passenger object 
+            clsPassenger passenger = new clsPassenger();
+            passenger.firstName = wndAddPass.sFirstName;
+            passenger.lastName = wndAddPass.sLastName;
+            passenger.seatNumber = sSeatNumber;
+
+            // Add passenger to database
+            passengerManager.AddPassenger(passenger, flightID);
+
+            
+            UpdateFlightDetails(flightID);
+
+            // Enable all disabled controls
+            cbChooseFlight.IsEnabled = true;
+            cbChoosePassenger.IsEnabled = true;
+            cmdAddPassenger.IsEnabled = true;
+            cmdChangeSeat.IsEnabled = true;
+            cmdDeletePassenger.IsEnabled = true;
+
+            // Reset boolean for adding a passenger
+            bAddingPassenger = false;
         }
     }
 }

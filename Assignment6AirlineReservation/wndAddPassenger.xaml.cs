@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Exception_Handler;
 
 namespace Assignment6AirlineReservation
 {
@@ -20,6 +21,12 @@ namespace Assignment6AirlineReservation
     /// </summary>
     public partial class wndAddPassenger : Window
     {
+        // Autoimplemented first name
+        public string sFirstName { get; set; }
+
+        // Autoimplemented last name
+        public string sLastName { get; set; }
+
         /// <summary>
         /// constructor for the add passenger window
         /// </summary>
@@ -36,7 +43,7 @@ namespace Assignment6AirlineReservation
         }
 
         /// <summary>
-        /// only allows letters to be input
+        /// Only allows letters to be input
         /// </summary>
         /// <param name="sender">sent object</param>
         /// <param name="e">key argument</param>
@@ -57,32 +64,75 @@ namespace Assignment6AirlineReservation
             }
             catch (System.Exception ex)
             {
-                HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
+                Exception_Handler.HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
                             MethodInfo.GetCurrentMethod().Name, ex.Message);
             }
         }
 
+
         /// <summary>
-        /// exception handler that shows the error
+        /// Verifies user entries
+        /// Activates Adding Passenger Mode
+        /// Stores first and last names
+        /// Resets first and last name fields
         /// </summary>
-        /// <param name="sClass">the class</param>
-        /// <param name="sMethod">the method</param>
-        /// <param name="sMessage">the error message</param>
-        private void HandleError(string sClass, string sMethod, string sMessage)
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <exception cref="Exception"></exception>
+        private void cmdSave_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                MessageBox.Show(sClass + "." + sMethod + " -> " + sMessage);
+                // Verify first and last name are filled in
+                if(txtFirstName.Text != null && txtLastName.Text != null)
+                {
+                    // Activate "Adding Passenger Mode"
+                    MainWindow.bAddingPassenger = true;
+
+                    // Store the values for first and last name
+                    sFirstName = txtFirstName.Text;
+                    sLastName = txtLastName.Text;
+
+                    // Clear text boxes
+                    txtFirstName.Text = "";
+                    txtLastName.Text = "";
+                }
+
+                // Hide this form
+                this.Hide();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                System.IO.File.AppendAllText("C:\\Error.txt", Environment.NewLine + "HandleError Exception: " + ex.Message);
+                //Throw an exception
+                throw new Exception(MethodInfo.GetCurrentMethod().DeclaringType.Name + "." +
+                                    MethodInfo.GetCurrentMethod().Name + " -> " + ex.Message);
             }
         }
 
-        private void cmdSave_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Clear first and last name text boxes
+        /// Closes this form
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <exception cref="Exception"></exception>
+        private void cmdCancel_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            try
+            {
+                // Clear text boxes
+                txtFirstName.Text = "";
+                txtLastName.Text = "";
+
+                // Close this form
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                //Throw an exception
+                throw new Exception(MethodInfo.GetCurrentMethod().DeclaringType.Name + "." +
+                                    MethodInfo.GetCurrentMethod().Name + " -> " + ex.Message);
+            }
         }
     }
 }
