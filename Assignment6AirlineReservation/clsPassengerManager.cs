@@ -141,5 +141,15 @@ namespace Assignment6AirlineReservation
             // Delete the passenger from Passenger table
             database.ExecuteNonQuery(sSQL);
         }
+
+        public void UpdateSeat(clsPassenger passenger, string seatNumber, int flightID)
+        {
+            clsDataAccess database = new clsDataAccess();
+
+            string sSQL = "UPDATE FLIGHT_PASSENGER_LINK SET Seat_Number = '" + seatNumber +
+           "' WHERE FLIGHT_ID = " + flightID + " AND PASSENGER_ID = " + passenger.id;
+
+            database.ExecuteNonQuery(sSQL);
+        }
     }
 }

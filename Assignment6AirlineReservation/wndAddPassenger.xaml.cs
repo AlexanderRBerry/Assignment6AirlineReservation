@@ -29,7 +29,7 @@ namespace Assignment6AirlineReservation
         public string sLastName { get; set; }
 
         /// <summary>
-        /// constructor for the add passenger window
+        /// Constructor for the add passenger window
         /// </summary>
         public wndAddPassenger()
         {

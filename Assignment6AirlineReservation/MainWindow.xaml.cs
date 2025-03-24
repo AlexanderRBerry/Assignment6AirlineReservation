@@ -31,7 +31,8 @@ namespace Assignment6AirlineReservation
         clsPassengerManager passengerManager;
 
         // Determines if the program is in "Add Passenger Mode"
-        public static bool bAddingPassenger;
+        public static bool bAddingPassenger = false;
+        public bool bChangingSeat = false; // I don't think this one needs to be static
 
         public MainWindow()
         {
@@ -95,6 +96,7 @@ namespace Assignment6AirlineReservation
                 // Bind passengers to the passenger combo box
                 cbChoosePassenger.ItemsSource = passengers;
 
+
                 if (flightID == 1)
                 {
                     // Display appropriate flight 
@@ -111,10 +113,10 @@ namespace Assignment6AirlineReservation
                         foreach (clsPassenger passenger in passengers)
                         {
                             //TODO: This if won't ever be true. Remove
-                            if (seat.Background == new SolidColorBrush(Colors.Red))
-                            {
-                                break;
-                            }
+                            //if (seat.Background == new SolidColorBrush(Colors.Red))
+                            //{
+                            //    break;
+                            //}
 
                             // The seat is taken
                             if (seat.Name == ("Seat" + passenger.seatNumber))
@@ -201,64 +203,131 @@ namespace Assignment6AirlineReservation
         }
 
 
-        private void cmdChangeSeat_Click(object sender, RoutedEventArgs e)
-        {
 
-        }
 
         private void Seat_Click(object sender, MouseButtonEventArgs e)
         {
-            // If not in Add passenger mode return
-            // TODO: Display the selected seats passenger if applicable
-            if (!bAddingPassenger)
+            try
             {
-                return;
+                // Label representing clicked seat
+                Label seat = sender as Label;
+
+                // Current flights ID
+                int flightID = cbChooseFlight.SelectedIndex + 1;
+
+                /*
+                 * Isolate the seat number of the selected label
+                 * Regular expression: 
+                 * \d finds a digit between 0 and 9
+                 * 1, 2 means it will find between 1 and 2 occurances of a digit
+                 * $ finds matches at the end of the string
+                 */
+                Match seatMatch = Regex.Match(seat.Name, @"\d{1,2}$");
+
+                // Isolate the value (seat number) of seatMatch
+                string sSeatNumber = seatMatch.Value;
+
+                // Seat is already taken select the passenger belonging to the clicked seat
+                if (flightManager.SeatTaken(sSeatNumber, flightID))
+                {
+                    foreach (clsPassenger passenger in cbChoosePassenger.ItemsSource)
+                    {
+                        if (sSeatNumber == passenger.seatNumber)
+                        {
+                            cbChoosePassenger.SelectedItem = passenger;
+                            lblPassengersSeatNumber.Content = passenger.seatNumber;
+                            return;
+                        }
+                    }
+                }
+
+                // Adding passenger mode is active. Create a new passenger.
+                if (bAddingPassenger)
+                {
+                    // Create a passenger object 
+                    clsPassenger passenger = new clsPassenger();
+                    passenger.firstName = wndAddPass.sFirstName;
+                    passenger.lastName = wndAddPass.sLastName;
+                    passenger.seatNumber = sSeatNumber;
+
+                    // Add passenger to database
+                    passengerManager.AddPassenger(passenger, flightID);
+
+                    // Exit adding passenger mode
+                    bAddingPassenger = false;
+                }
+
+                // Changing seat mode is active Update passenger seat in passenger list and database
+                if (bChangingSeat)
+                {
+                    // Get the selected passenger
+                    clsPassenger passenger = (clsPassenger)cbChoosePassenger.SelectedItem;
+
+                    // Set the passengers seat number 
+                    passenger.seatNumber = sSeatNumber;
+
+                    // Update the link table
+                    passengerManager.UpdateSeat(passenger, sSeatNumber, flightID);//Int32.Parse(sSeatNumber));
+
+                    // Exit changing seat mode
+                    bChangingSeat = false;
+                }
+
+                UpdateFlightDetails(flightID);
+
+                // Enable all disabled controls
+                cbChooseFlight.IsEnabled = true;
+                cbChoosePassenger.IsEnabled = true;
+                cmdAddPassenger.IsEnabled = true;
+                cmdChangeSeat.IsEnabled = true;
+                cmdDeletePassenger.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
+                    MethodInfo.GetCurrentMethod().Name, ex.Message);
             }
 
-            Label seat = sender as Label;
-            int flightID = cbChooseFlight.SelectedIndex + 1;
-
-            /*
-             * Isolate the seat number of the selected label
-             * Regular expression: 
-             * \d finds a digit between 0 and 9
-             * 1, 2 means it will find between 1 and 2 occurances of a digit
-             * $ finds matches at the end of the string
-             */
-            Match seatMatch = Regex.Match(seat.Name, @"\d{1,2}$");
-
-            // Isolate the value (seat number) of seatMatch
-            string sSeatNumber = seatMatch.Value;
-
-            // Seat is already taken do nothing
-            if (flightManager.SeatTaken(sSeatNumber, flightID))
-            {
-                return;
-            }
-
-            // Create a passenger object 
-            clsPassenger passenger = new clsPassenger();
-            passenger.firstName = wndAddPass.sFirstName;
-            passenger.lastName = wndAddPass.sLastName;
-            passenger.seatNumber = sSeatNumber;
-
-            // Add passenger to database
-            passengerManager.AddPassenger(passenger, flightID);
-
-            
-            UpdateFlightDetails(flightID);
-
-            // Enable all disabled controls
-            cbChooseFlight.IsEnabled = true;
-            cbChoosePassenger.IsEnabled = true;
-            cmdAddPassenger.IsEnabled = true;
-            cmdChangeSeat.IsEnabled = true;
-            cmdDeletePassenger.IsEnabled = true;
-
-            // Reset boolean for adding a passenger
-            bAddingPassenger = false;
         }
 
+        /// <summary>
+        /// Activate "Seat Changing Mode"
+        /// Deactivate most controls so user must pick a seat.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void cmdChangeSeat_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // No passenger is selected. Don't do anything
+                if (cbChoosePassenger.SelectedItem == null)
+                {
+                    return;
+                }
+
+                bChangingSeat = true;
+
+                // Disable all controls except choosing a seat
+                cbChooseFlight.IsEnabled = false;
+                cbChoosePassenger.IsEnabled = false;
+                cmdAddPassenger.IsEnabled = false;
+                cmdChangeSeat.IsEnabled = false;
+                cmdDeletePassenger.IsEnabled = false;
+
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleError(MethodInfo.GetCurrentMethod().DeclaringType.Name,
+                    MethodInfo.GetCurrentMethod().Name, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Deletes the selected passenger
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void cmdDeletePassenger_Click(object sender, RoutedEventArgs e)
         {
             // No passenger is selected. Don't do anything
@@ -277,6 +346,74 @@ namespace Assignment6AirlineReservation
             passengerManager.DeletePassenger(passenger, flightID);
 
             UpdateFlightDetails(flightID);
+        }
+
+        /// <summary>
+        /// Highlights the selected passengers seat seat
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void cbChoosePassenger_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // TODO: cbChoosePassenger combo box does not seem to be showing the selected passenger
+            // This may have something to do with this fuction
+
+            // No passenger is selected. Do nothing.
+            if (cbChoosePassenger.SelectedItem == null || cbChoosePassenger.SelectedIndex == -1)
+            {
+                return;
+            }
+
+            // ID of the current flight
+            int flightID = cbChooseFlight.SelectedIndex + 1;
+
+            // Represents the currently selected passenger
+            clsPassenger selectedPassenger = (clsPassenger)cbChoosePassenger.SelectedItem;
+
+            // Reset flight details
+            UpdateFlightDetails(flightID);
+
+            // Set the selected passengers seat to selected (green)
+            UpdateFlightDetails(flightID, selectedPassenger.seatNumber);
+        }
+
+        /// <summary>
+        /// Marks the currently selected passengers seat to green
+        /// </summary>
+        /// <param name="flightID"></param>
+        /// <param name="seatNumber"></param>
+        private void UpdateFlightDetails(int flightID, string seatNumber)
+        {
+            if (flightID == 1)
+            {
+                // Iterate through seats
+                foreach (Label seat in c767_Seats.Children)
+                {
+                        // Seat matches the selected passenger
+                        if (seat.Name == ("Seat" + seatNumber))
+                        {
+                            // Mark Seat green (selected)
+                            seat.Background = new SolidColorBrush(Colors.Green);
+                            return;
+                        }
+                    }
+            }
+            else
+            {
+                // Iterate through seats
+                foreach (Label seat in cA380_Seats.Children)
+                {
+
+                    // Seat matches the selected passenger
+                    if (seat.Name == ("SeatA" + seatNumber))
+                    {
+                    // Mark Seat green (selected)
+                    seat.Background = new SolidColorBrush(Colors.Green);
+                    return;
+                    }
+
+                }
+            }
         }
     }
 }
