@@ -133,8 +133,8 @@ namespace Assignment6AirlineReservation
             if (flightID == 1)
             {
                 // Display appropriate flight 
-                CanvasA380.Visibility = Visibility.Hidden;
-                Canvas767.Visibility = Visibility.Visible;
+                CanvasA380.Visibility = Visibility.Visible;
+                Canvas767.Visibility = Visibility.Hidden;
 
                 // Mark taken seats red and avaliable seats blue
                 foreach (Label seat in c767_Seats.Children)
@@ -157,8 +157,8 @@ namespace Assignment6AirlineReservation
             else
             {
                 // Display appropriate flight
-                Canvas767.Visibility = Visibility.Hidden;
-                CanvasA380.Visibility = Visibility.Visible;
+                Canvas767.Visibility = Visibility.Visible;
+                CanvasA380.Visibility = Visibility.Hidden;
 
                 // Mark taken seats red and avaliable seats blue
                 foreach (Label seat in cA380_Seats.Children)
