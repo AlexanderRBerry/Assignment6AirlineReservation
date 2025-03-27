@@ -31,14 +31,19 @@ namespace Assignment6AirlineReservation
             {
                 // This links to the database
                 clsDataAccess dataBase = new clsDataAccess();
+
                 // Get the flights dataset
                 DataSet dsFlights = new DataSet();
+
                 // The SQL command to get all flights
                 string sSQL = "SELECT Flight_ID, Flight_Number, Aircraft_Type FROM FLIGHT";
+
                 // The number of rows returned
                 int rowCount = 0;
+
                 // Dataset holding flights
                 dsFlights = dataBase.ExecuteSQLStatement(sSQL, ref rowCount);
+
                 // Initialize flights
                 flights = new List<clsFlight>();
 
@@ -46,6 +51,7 @@ namespace Assignment6AirlineReservation
                 foreach (DataRow dr in dsFlights.Tables[0].Rows)
                 {
                     clsFlight flight = new clsFlight();
+
                     // dr[i] will hold the value for the ith column of the given row
                     flight.id = dr[0].ToString();
                     flight.flightNumber = dr[1].ToString();

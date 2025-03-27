@@ -91,9 +91,6 @@ namespace Assignment6AirlineReservation
                 // This connects to the database
                 clsDataAccess database = new clsDataAccess();
 
-                // This seems to add the individual into the database, but it doesn't seem to be permenant.
-                // The individual has a database ID, but when checking the database or updating the flight details they are not present.
-
                 // Excecute update. 
                 database.ExecuteNonQuery(sSQL); // Nonquery means nothing will be returned.
 
@@ -125,6 +122,7 @@ namespace Assignment6AirlineReservation
         /// <param name="flightID">int flightID of which the passenger will be removed</param>
         public void DeletePassenger(clsPassenger passenger, int flightID)
         {
+            // This connects to the database
             clsDataAccess database = new clsDataAccess();
 
             // SQL to delete a passenger from the link table
@@ -142,13 +140,22 @@ namespace Assignment6AirlineReservation
             database.ExecuteNonQuery(sSQL);
         }
 
+        /// <summary>
+        /// Updates a passengers seat in the database
+        /// </summary>
+        /// <param name="passenger">The clsPassenger object</param>
+        /// <param name="seatNumber">The new seat number</param>
+        /// <param name="flightID">The ID of the flight the seat is on</param>
         public void UpdateSeat(clsPassenger passenger, string seatNumber, int flightID)
         {
+            // This connects to the database
             clsDataAccess database = new clsDataAccess();
 
+            // SQL to update a passengers seat
             string sSQL = "UPDATE FLIGHT_PASSENGER_LINK SET Seat_Number = '" + seatNumber +
            "' WHERE FLIGHT_ID = " + flightID + " AND PASSENGER_ID = " + passenger.id;
 
+            // Execute the SQL
             database.ExecuteNonQuery(sSQL);
         }
     }

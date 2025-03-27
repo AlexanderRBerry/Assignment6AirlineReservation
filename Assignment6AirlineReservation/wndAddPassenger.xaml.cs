@@ -22,15 +22,16 @@ namespace Assignment6AirlineReservation
     /// </summary>
     public partial class wndAddPassenger : Window
     {
-        // Autoimplemented first name
+        /// <summary>
+        ///  Autoimplemented first name
+        /// </summary>
         public string sFirstName { get; set; }
 
-        // Autoimplemented last name
+        /// <summary>
+        ///  Autoimplemented last name
+        /// </summary>
         public string sLastName { get; set; }
 
-        /// <summary>
-        /// Constructor for the add passenger window
-        /// </summary>
         public wndAddPassenger()
         {
             try
@@ -75,7 +76,7 @@ namespace Assignment6AirlineReservation
         /// Verifies user entries
         /// Activates Adding Passenger Mode
         /// Stores first and last names
-        /// Resets first and last name fields
+        /// Resets first and last name text boxes
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
