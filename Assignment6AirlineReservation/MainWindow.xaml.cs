@@ -298,7 +298,10 @@ namespace Assignment6AirlineReservation
                     passenger.seatNumber = sSeatNumber;
 
                     // Update the link table
-                    passengerManager.UpdateSeat(passenger, sSeatNumber, flightID);//Int32.Parse(sSeatNumber));
+                    passengerManager.UpdateSeat(passenger, sSeatNumber, flightID);
+
+                    // Clear seat number label
+                    lblPassengersSeatNumber.Content = "";
 
                     // Exit changing seat mode
                     bChangingSeat = false;
@@ -387,6 +390,9 @@ namespace Assignment6AirlineReservation
                 // Delete the passenger from the database
                 passengerManager.DeletePassenger(passenger, flightID);
 
+                // Clear seat number label
+                lblPassengersSeatNumber.Content = "";
+
                 UpdateFlightDetails(flightID);
             }
         }
@@ -412,6 +418,9 @@ namespace Assignment6AirlineReservation
 
             // The currently selected passenger
             clsPassenger selectedPassenger = (clsPassenger)cbChoosePassenger.SelectedItem;
+
+            // Update passenger seat label
+            lblPassengersSeatNumber.Content = selectedPassenger.seatNumber;
 
             // Reset flight details
             ResetSeats(flightID, ref passengers);
